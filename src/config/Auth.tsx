@@ -5,7 +5,7 @@ import { supabase } from "./supabase";
 const AuthContext = createContext<any | undefined>(undefined);
 
 interface AuthProviderProps {
-  children: React.ReactElement;
+  children: React.ReactElement | React.ReactElement[];
 }
 //export the authentication provider
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {

@@ -1,42 +1,118 @@
+import React, { useState } from "react";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { Button, Card, CardContent, CardHeader } from "@mui/material";
-import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { useAuth } from "../config/Auth";
 import { FormInputs, LoginProps } from "../models/login";
 import { FormInputText } from "./FormInputText";
+import Login from "./Login";
+import Register from "./Register";
+import SocialMedia from "./SocialMedia";
 
 //component function
-const LoginFrom = ({
-  formTitle = "S'inscrire",
-  fields = ["email", "status"],
+const SignupFrom: React.FC<LoginProps> = ({
+  formTitle = "Se connecter",
+  fields = ["name", "email", "status"],
   getData,
   customStyle = undefined,
   ...rest
-}: LoginProps) => {
-  //   //form input validation
-  //   const schema = yup
-  //     .object()
-  //     .shape({
-  //       name: yup.string().required("nom est requis"),
-  //       email: yup.string().email().required("l'e-mail est requis"),
-  //       password: yup
-  //         .string()
-  //         .min(6, "mot de passe doit contenir au minimum 6 characteres")
-  //         .required(),
-  //     })
-  //     .required();
-  //   const { signIn } = useAuth();
-  //   //useform
-  //   const { control, handleSubmit } = useForm<FormInputs>({
-  //     resolver: yupResolver(schema),
-  //   });
+}) => {
+  const [changed, setChanged] = useState(false);
+  // const [new, SetNew] = useState<boolean| undefined>(false);
+  const { user, signUp, signIn } = useAuth();
+  //form input validation
+  const schema = yup
+    .object()
+    .shape({
+      name: yup.string().required("nom est requis"),
+      email: yup.string().email().required("l'e-mail est requis"),
+      password: yup
+        .string()
+        .min(6, "mot de passe doit contenir au minimum 6 characteres")
+        .required(),
+    })
+    .required();
+
+  //useform
+  const { control, handleSubmit } = useForm<FormInputs>({
+    resolver: yupResolver(schema),
+  });
+  //handle submit
+  const onFormSubmit = async (data: FormInputs) => {
+    const { user, error } = await signUp({
+      name: data.name,
+      email: data.email,
+      password: data.password,
+      status: "ACTIVE",
+    });
+    if (error) {
+      alert(error.message);
+    }
+    console.log(data);
+    console.log(user);
+  };
+  const onFormSubmitIn = async (data: FormInputs) => {
+    const { user, error } = await signIn({
+      email: data.email,
+      password: data.password,
+    });
+    if (error) {
+      alert(error.message);
+    }
+    console.log(data);
+    console.log(user);
+  };
+  const handleConnect = () => {
+    setChanged(!changed);
+  };
+
   return (
-    <Card style={{ width: "35%", margin: "auto" }}>
-      <CardHeader title={formTitle} />
-      {/* <CardContent>
-        <div>
+    <Card style={{ width: "35%", margin: "auto", marginTop: "100px" }}>
+      <CardHeader title={changed ? "S'inscrire" : formTitle} />
+      <CardContent>
+        {changed ? (
+          <>
+            <Register
+              handleSubmit={handleSubmit}
+              onFormSubmit={onFormSubmit}
+              control={control}
+            />
+            <span
+              style={{
+                marginLeft: "auto",
+                color: "blue",
+                textDecoration: "underline",
+              }}
+              onClick={handleConnect}
+            >
+              se connecter
+            </span>
+          </>
+        ) : (
+          <>
+            <Login
+              handleSubmit={handleSubmit}
+              onFormSubmit={onFormSubmitIn}
+              control={control}
+            />
+            <span
+              style={{
+                margin: "auto",
+                color: "blue",
+                textDecoration: "underline",
+              }}
+              onClick={handleConnect}
+            >
+              s'inscrire
+            </span>
+          </>
+        )}
+
+        <SocialMedia />
+
+        {/* <div>
+          <FormInputText name="name" control={control} label="Nom" />
           <FormInputText name="email" control={control} label="Email" />
           <FormInputText
             name="password"
@@ -89,10 +165,10 @@ const LoginFrom = ({
               Facebook
             </Button>
           </div>
-        </div>
-      </CardContent> */}
+        </div> */}
+      </CardContent>
     </Card>
   );
 };
 
-export default LoginFrom;
+export default SignupFrom;
